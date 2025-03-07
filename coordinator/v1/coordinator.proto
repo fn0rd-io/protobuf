@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+// Namespace for the coordinator service
+// The fn0rd.coordinator.v1 package contains definitions for the distributed computation coordination system
+package fn0rd.coordinator.v1;
+
+// Go package path and name for generated code
+option go_package = "github.com/fn0rd-io/protobuf/coordinator/v1;coordinator";
+
+// CoordinatorService orchestrates distributed computation tasks between clients and the coordinator
+// It handles client registration, task distribution, and result collection
+service CoordinatorService {
+  // Stream establishes a bidirectional connection between client and coordinator
+  // Clients can send registration and result submission messages
+  // The coordinator can send computational targets and other control messages
+  rpc Stream(stream StreamRequest) returns (stream StreamResponse) {}
+}
+
+// Capability enum defines the different scanning or operational capabilities
+// that components in the system can support.
+enum Capability {
+  // Default value used when capability is unknown or unspecified.
+  CAPABILITY_UNKNOWN_UNSPECIFIED = 0;
+  
+  // Basic built-in capabilities provided by default.
+  CAPABILITY_BUILTIN = 1;
+  
+  // Basic network mapping capability using nmap with missing scripts.
+  CAPABILITY_NMAP = 2;
+  
+  // Full network mapping capability using nmap with all scripts.
+  CAPABILITY_NMAP_FULL = 3;
+}
+
+// StreamRequest encapsulates all possible client-to-coordinator messages
+message StreamRequest {
+  // Unique random value to prevent replay attacks
+  bytes nonce = 1;
+  
+  // Cryptographic signature proving the sender's identity
+  bytes signature = 2;
+  
+  // The actual request payload, which can be one of multiple types
+  oneof request {
+    // Client registration information
+    RegisterRequest register = 3;
+    
+    // Computation result submission
+    SubmitRequest submit = 4;
+  };
+}
+
+// RegisterRequest is sent by clients to join the computation network
+message RegisterRequest {
+  // The client's public key for message verification and identity
+  bytes public_key = 1;
+  
+  // Number of parallel computation workers the client can provide
+  uint32 workers = 2;
+
+  // The client's capabilities
+  repeated Capability capabilities = 3;
+}
+
+// SubmitRequest is sent by clients when they complete a computational task
+message SubmitRequest {
+  // The result of the completed computation
+  bytes result = 1;
+}
+
+// StreamResponse encapsulates all possible coordinator-to-client messages
+message StreamResponse {
+  // Unique random value to prevent replay attacks
+  bytes nonce = 1;
+  
+  // The actual response payload, which can be one of multiple types
+  oneof response {
+    // Computational target assignment
+    TargetResponse target = 2;
+  };
+}
+
+// TargetResponse contains a computational task assigned to a client
+message TargetResponse {
+  // The computational targets to process
+  bytes target = 1;
+  
+  // Timestamp by which the computation must be completed
+  google.protobuf.Timestamp deadline = 2;
+}
