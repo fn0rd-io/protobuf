@@ -49,6 +49,9 @@ message StreamRequest {
     
     // Computation result submission
     SubmitRequest submit = 4;
+
+    // Ping request
+    PingRequest ping = 5;
   };
 }
 
@@ -79,6 +82,9 @@ message StreamResponse {
   oneof response {
     // Computational target assignment
     TargetResponse target = 2;
+
+    // Ping response
+    PingResponse ping = 3;
   };
 }
 
@@ -89,4 +95,12 @@ message TargetResponse {
   
   // Timestamp by which the computation must be completed
   google.protobuf.Timestamp deadline = 2;
+}
+
+message PingRequest {
+}
+
+message PingResponse {
+  // Unique random value to prevent replay attacks
+  bytes nonce = 1;
 }
