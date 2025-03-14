@@ -65,6 +65,9 @@ message RegisterRequest {
 
   // The client's capabilities
   repeated Capability capabilities = 3;
+
+  // The client's version
+  string version = 4;
 }
 
 // SubmitRequest is sent by clients when they complete a computational task
@@ -98,6 +101,8 @@ message TargetResponse {
 }
 
 message PingRequest {
+  // Timestamp of the ping request
+  google.protobuf.Timestamp timestamp = 1;
 }
 
 message PingResponse {

@@ -1,0 +1,41 @@
+name: Protocol Buffer Checks
+
+on:
+  push:
+    paths:
+      - '**/*.proto'
+      - 'buf.yaml'
+      - 'buf.gen.yaml'
+      - '.github/workflows/protobuf-checks.yml'
+  pull_request:
+    paths:
+      - '**/*.proto'
+      - 'buf.yaml'
+      - 'buf.gen.yaml'
+      - '.github/workflows/protobuf-checks.yml'
+
+jobs:
+  buf-checks:
+    name: Buf Lint and Breaking Changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for breaking change detection
+      
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1
+        with:
+          version: 'latest'
+      
+      - name: Lint Protobuf Files
+        run: buf lint
+      
+      - name: Check for Breaking Changes
+        if: github.event_name == 'pull_request'
+        run: |
+          # Fetch the base branch for comparison
+          git fetch origin ${{ github.base_ref }}
+          # Run breaking change detection against the base branch
+          buf breaking --against ".git#revision=${{ github.base_ref }}"
